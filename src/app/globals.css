@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+/* Bloom & Vow tokens. Daylight is the printed card; Candlelight is the evening screen version. */
+:root,
+[data-theme="light"] {
+  --paper: #fbf7f4;
+  --paper-raised: #ffffff;
+  --petal: #f5e6dc;
+  --blush: #eccfbf;
+  --blush-deep: #d9ab93;
+  --cocoa: #8a6a55;
+  --cocoa-ink: #6e5241;
+  --slate: #2e3d4e;
+  --slate-hover: #3d5064;
+  --on-slate: #fbf7f4;
+  --ink: #2b2622;
+  --ink-muted: #6b625b;
+  --hairline: #e3d3c8;
+  --sage: #8f9e82;
+  --sage-ink: #55644a;
+  --terracotta: #d9785a;
+  --focus: var(--slate);
+  --shadow-card: 0 1px 2px rgba(110, 82, 65, 0.08), 0 12px 32px rgba(110, 82, 65, 0.1);
+  --shadow-lift: 0 6px 16px rgba(46, 61, 78, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1f1a17;
+    --paper-raised: #2a231f;
+    --petal: #3b2f29;
+    --blush: #e2bfa9;
+    --blush-deep: #c99a80;
+    --cocoa: #b38d75;
+    --cocoa-ink: #e0b9a1;
+    --slate: #9fb3c8;
+    --slate-hover: #b7c8da;
+    --on-slate: #1f1a17;
+    --ink: #f4ece6;
+    --ink-muted: #c2b4aa;
+    --hairline: #4a3d36;
+    --sage: #9fae91;
+    --sage-ink: #b9c7ab;
+    --terracotta: #e88f71;
+    --focus: var(--blush);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.35);
+    --shadow-lift: 0 6px 16px rgba(0, 0, 0, 0.45);
+  }
+}
+
+[data-theme="dark"] {
+  --paper: #1f1a17;
+  --paper-raised: #2a231f;
+  --petal: #3b2f29;
+  --blush: #e2bfa9;
+  --blush-deep: #c99a80;
+  --cocoa: #b38d75;
+  --cocoa-ink: #e0b9a1;
+  --slate: #9fb3c8;
+  --slate-hover: #b7c8da;
+  --on-slate: #1f1a17;
+  --ink: #f4ece6;
+  --ink-muted: #c2b4aa;
+  --hairline: #4a3d36;
+  --sage: #9fae91;
+  --sage-ink: #b9c7ab;
+  --terracotta: #e88f71;
+  --focus: var(--blush);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-petal: var(--petal);
+  --color-blush: var(--blush);
+  --color-blush-deep: var(--blush-deep);
+  --color-cocoa: var(--cocoa);
+  --color-cocoa-ink: var(--cocoa-ink);
+  --color-slate: var(--slate);
+  --color-slate-hover: var(--slate-hover);
+  --color-on-slate: var(--on-slate);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-hairline: var(--hairline);
+  --color-sage: var(--sage);
+  --color-sage-ink: var(--sage-ink);
+  --color-terracotta: var(--terracotta);
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
+}
+
+/* next/font sets --font-poppins / --font-kaushan on <html>, so these resolve at :root. */
+@theme {
+  --font-sans: var(--font-poppins), "Helvetica Neue", Arial, sans-serif;
+  --font-script: var(--font-kaushan), "Brush Script MT", cursive;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Type scale */
+@utility names {
+  font-family: var(--font-script);
+  font-size: 64px;
+  line-height: 68px;
+  font-weight: 400;
+}
+@utility script-heading {
+  font-family: var(--font-script);
+  font-size: 34px;
+  line-height: 42px;
+  font-weight: 400;
+}
+@utility script-accent {
+  font-family: var(--font-script);
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 400;
+}
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Buttons: primary slate, soft petal, ghost hairline */
+.btn,
+.btn-soft,
+.btn-ghost {
+  @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full border border-transparent px-6 py-3 text-sm font-medium tracking-[0.04em] transition disabled:cursor-not-allowed disabled:opacity-45;
+}
+.btn:focus-visible,
+.btn-soft:focus-visible,
+.btn-ghost:focus-visible,
+.input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.btn {
+  @apply bg-slate text-on-slate enabled:hover:-translate-y-px enabled:hover:bg-slate-hover enabled:hover:shadow-lift;
+}
+a.btn:hover {
+  @apply -translate-y-px bg-slate-hover shadow-lift;
+}
+.btn-soft {
+  @apply bg-petal text-ink hover:bg-blush;
+}
+.btn-ghost {
+  @apply border-hairline bg-transparent text-cocoa-ink hover:border-cocoa;
+}
+.btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+.btn-dot {
+  @apply size-2 rounded-full bg-current opacity-70;
+}
+
+.input {
+  @apply w-full rounded-[14px] border border-hairline bg-paper-raised px-4 py-3 text-base text-ink placeholder:text-ink-muted/70 focus:border-cocoa;
+}
+.label {
+  @apply eyebrow mb-2 block text-cocoa-ink;
+}
+.card {
+  @apply relative rounded-[14px] border border-hairline bg-paper-raised p-6 shadow-card;
+}
+.link {
+  @apply text-cocoa-ink underline decoration-blush-deep underline-offset-4 hover:decoration-cocoa;
+}
+.alert {
+  @apply flex gap-3 rounded-[14px] bg-petal px-4 py-3 text-sm text-ink before:mt-1.5 before:size-2 before:shrink-0 before:rounded-full before:bg-terracotta;
+}

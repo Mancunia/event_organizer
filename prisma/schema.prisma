@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Event {
+  id                  String          @id @default(cuid())
+  slug                String          @unique
+  title               String
+  // key of EVENT_KINDS in src/lib/event-kinds.ts
+  kind                String          @default("wedding")
+  // per-event overrides of the kind's default wording; null = use the preset
+  eyebrow             String?
+  inviteLine          String?
+  date                DateTime
+  venue               String
+  mapUrl              String?
+  message             String?
+  // { primary, accent, background, heroImageUrl, fontHeading }
+  theme               Json            @default("{}")
+  messageTemplateName String          @default("event_invite")
+  templateLanguage    String          @default("en")
+  // WhatsApp template for scanner pairing links: {{1}} staff name, {{2}} event title, {{3}} device label, {{4}} link
+  scannerTemplateName String          @default("scanner_link")
+  // bcrypt hash of the hosts' password for /<slug>/guests; null = client view disabled
+  clientPasswordHash  String?
+  // Client's own WhatsApp Business account; null = send through the platform account (WA_* env vars).
+  // Token and app secret are AES-256-GCM encrypted with CREDENTIALS_SECRET (src/lib/secret-box.ts).
+  waPhoneNumberId     String?
+  waAccessTokenEnc    String?
+  waAppSecretEnc      String?
+  waVerifyToken       String?
+  createdAt           DateTime        @default(now())
+  guests              Guest[]
+  scanners            ScannerDevice[]
+  auditLogs           AuditLog[]
+}
+
+model Guest {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name      String
+  phone     String
+  partySize Int      @default(1)
+  notes     String?
+  createdAt DateTime @default(now())
+  invite    Invite?
+
+  @@unique([eventId, phone])
+}
+
+model Invite {
+  id              String         @id @default(cuid())
+  guestId         String         @unique
+  guest           Guest          @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  code            String         @unique
+  // ECDSA P-256 public key (JWK) of the first device that claimed this code
+  devicePublicKey Json?
+  claimedAt       DateTime?
+  claimUserAgent  String?
+  checkedInAt     DateTime?
+  checkedInById   String?
+  checkedInBy     ScannerDevice? @relation(fields: [checkedInById], references: [id], onDelete: SetNull)
+  sentAt          DateTime?
+  sendStatus      String?
+  sendError       String?
+  waMessageId     String?        @unique
+  // "attending" | "declined"; null = no reply yet
+  rsvpStatus      String?
+  rsvpCount       Int?
+  rsvpAt          DateTime?
+  nonces          Nonce[]
+}
+
+model Nonce {
+  id        String    @id @default(cuid())
+  inviteId  String
+  invite    Invite    @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  value     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  @@index([inviteId])
+}
+
+/**
+ * A phone or tablet allowed to check guests in. Paired by opening a one-time WhatsApp link.
+ */
+model ScannerDevice {
+  id              String         @id @default(cuid())
+  eventId         String
+  event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  // e.g. "Gate A"
+  label           String
+  staffName       String
+  phone           String
+  // pairing secret in the link; useless once the device is bound or the link expires
+  token           String         @unique
+  tokenExpiresAt  DateTime
+  // ECDSA P-256 public key (JWK) of the device that opened the link first
+  devicePublicKey Json?
+  boundAt         DateTime?
+  boundUserAgent  String?
+  lastSeenAt      DateTime?
+  revokedAt       DateTime?
+  sentAt          DateTime?
+  sendStatus      String?
+  sendError       String?
+  waMessageId     String?        @unique
+  createdAt       DateTime       @default(now())
+  nonces          ScannerNonce[]
+  checkIns        Invite[]
+
+  @@index([eventId])
+}
+
+model ScannerNonce {
+  id        String        @id @default(cuid())
+  deviceId  String
+  device    ScannerDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  value     String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  @@index([deviceId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  inviteId  String?
+  action    String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventId, createdAt])
+}
+
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+}
