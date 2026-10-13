@@ -4,9 +4,19 @@ function required(name: string): string {
   return value;
 }
 
+function withScheme(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 export const env = {
+  // APP_URL wins; on Vercel fall back to the stable production domain (links sent over
+  // WhatsApp must survive redeploys), then the per-deployment preview URL.
   get appUrl() {
-    return (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+    const url =
+      process.env.APP_URL ||
+      (process.env.VERCEL_ENV === "production" && process.env.VERCEL_PROJECT_PRODUCTION_URL) ||
+      process.env.VERCEL_URL;
+    return (url ? withScheme(url) : "http://localhost:3000").replace(/\/$/, "");
   },
   get sessionSecret() {
     const secret = required("SESSION_SECRET");

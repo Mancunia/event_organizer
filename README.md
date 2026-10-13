@@ -23,6 +23,13 @@ Open `http://localhost:3000/admin` and sign in with `ADMIN_PASSWORD`.
 
 With `WA_PROVIDER=console` invites are printed to the server log instead of being sent.
 
+## Deploying to Vercel
+
+Shared links (invites, scanner links, QR passes, calendar entries, webhook URLs) are built from `APP_URL`. If it is
+unset, production uses the project's production domain (`VERCEL_PROJECT_PRODUCTION_URL`) and previews use their
+deployment URL. Set `APP_URL=https://<your-domain>` for a custom domain, then redeploy. Links already sent with the
+wrong host must be re-sent from admin.
+
 ## Event types
 
 Each event has a type (Wedding, Birthday, Memorial / Funeral, Corporate, Party, Other) that supplies the default
